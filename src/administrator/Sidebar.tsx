@@ -11,18 +11,33 @@ const sidebarLinks = [
   {
     id: 1,
     title: "Productos",
-    href: "/productos",
+    href: "/administrator/productos",
     icon: HiOutlineViewGrid,
   },
-  { id: 2, title: "Usuarios", href: "/usuarios", icon: HiOutlineUsers },
+  {
+    id: 2,
+    title: "Usuarios",
+    href: "/administrator/usuarios",
+    icon: HiOutlineUsers,
+  },
   {
     id: 3,
     title: "Estadísticas",
-    href: "/estadisticas",
+    href: "/administrator/estadisticas",
     icon: HiOutlineChartBar,
   },
-  { id: 4, title: "Pedidos", href: "/pedidos", icon: HiOutlineShoppingBag },
-  { id: 5, title: "Diseñador", href: "/diseñador", icon: HiUserCircle },
+  {
+    id: 4,
+    title: "Pedidos",
+    href: "/administrator/pedidos",
+    icon: HiOutlineShoppingBag,
+  },
+  {
+    id: 5,
+    title: "Diseñador",
+    href: "/administrator/diseñador",
+    icon: HiUserCircle,
+  },
 ];
 
 export const Sidebar = () => {
