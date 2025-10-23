@@ -1,58 +1,124 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HiOutlineTrash, HiOutlinePencil, HiOutlinePlus } from "react-icons/hi";
 
 interface Usuario {
   id: number;
   nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
   email: string;
+  fecha_nacimiento: string;
+  direccion: string;
   rol: string;
+  contraseña: string;
 }
 
 export const UsuariosTable = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([
-    {
-      id: 1,
-      nombre: "Gabo",
-      email: "gabi@example.com",
-      rol: "Administrador",
-    },
-  ]);
-
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ nombre: "", email: "", rol: "" });
+  const [form, setForm] = useState({
+    nombre: "",
+    apellido_paterno: "",
+    apellido_materno: "",
+    email: "",
+    fecha_nacimiento: "",
+    direccion: "",
+    rol: "",
+    contraseña: "",
+  });
+
+  useEffect(() => {
+    const usuariosInicial: Usuario[] = [
+      {
+        id: 1,
+        nombre: "Gabo",
+        apellido_paterno: "García",
+        apellido_materno: "López",
+        email: "gabi@gmail.com",
+        fecha_nacimiento: "06-10-2002",
+        direccion: "Achachicala, La Paz",
+        rol: "Administrador",
+        contraseña: "123456",
+      },
+      {
+        id: 2,
+        nombre: "Vlad",
+        apellido_paterno: "III",
+        apellido_materno: "De Valaquia",
+        email: "vladelempalador@gmail.com",
+        fecha_nacimiento: "30-12-1431",
+        direccion: "Sighișoara, Romania",
+        rol: "Administrador",
+        contraseña: "1234567",
+      },
+    ];
+    setUsuarios(usuariosInicial);
+  }, []);
 
   const handleAdd = () => {
     setEditingId(null);
-    setForm({ nombre: "", email: "", rol: "" });
+    setForm({
+      nombre: "",
+      apellido_paterno: "",
+      apellido_materno: "",
+      email: "",
+      fecha_nacimiento: "",
+      direccion: "",
+      rol: "",
+      contraseña: "",
+    });
     setShowModal(true);
   };
 
   const handleEdit = (usuario: Usuario) => {
     setEditingId(usuario.id);
-    setForm({ nombre: usuario.nombre, email: usuario.email, rol: usuario.rol });
+    setForm({
+      nombre: usuario.nombre,
+      apellido_paterno: usuario.apellido_paterno,
+      apellido_materno: usuario.apellido_materno,
+      email: usuario.email,
+      fecha_nacimiento: usuario.fecha_nacimiento,
+      direccion: usuario.direccion,
+      rol: usuario.rol,
+      contraseña: usuario.contraseña || "",
+    });
     setShowModal(true);
   };
 
   const handleDelete = (id: number) => {
-    setUsuarios(usuarios.filter((u) => u.id !== id));
+    const usuariosActualizados = usuarios.filter((u) => u.id !== id);
+    setUsuarios(usuariosActualizados);
   };
 
   const handleSave = () => {
-    if (!form.nombre || !form.email || !form.rol) return;
+    if (
+      !form.nombre ||
+      !form.apellido_paterno ||
+      !form.apellido_materno ||
+      !form.email ||
+      !form.rol
+    ) {
+      alert("Completa todos los campos obligatorios");
+      return;
+    }
+
+    let usuariosActualizados;
 
     if (editingId) {
-      setUsuarios(
-        usuarios.map((u) => (u.id === editingId ? { ...u, ...form } : u))
+      usuariosActualizados = usuarios.map((u) =>
+        u.id === editingId ? { ...u, ...form } : u
       );
     } else {
-      setUsuarios([...usuarios, { id: Date.now(), ...form }]);
+      usuariosActualizados = [...usuarios, { id: Date.now(), ...form }];
     }
+
+    setUsuarios(usuariosActualizados);
     setShowModal(false);
   };
 
   return (
-    <div>
+    <div className="p-6">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-2xl font-bold">Usuarios</h2>
         <button
@@ -69,7 +135,11 @@ export const UsuariosTable = () => {
           <thead className="bg-slate-200 font-semibold">
             <tr>
               <th className="px-6 py-3">Nombre</th>
+              <th className="px-6 py-3">Apellido Paterno</th>
+              <th className="px-6 py-3">Apellido Materno</th>
               <th className="px-6 py-3">Email</th>
+              <th className="px-6 py-3">Fecha Nacimiento</th>
+              <th className="px-6 py-3">Dirección</th>
               <th className="px-6 py-3">Rol</th>
               <th className="px-6 py-3 text-center">Acciones</th>
             </tr>
@@ -81,7 +151,11 @@ export const UsuariosTable = () => {
                 className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
               >
                 <td className="px-6 py-3">{usuario.nombre}</td>
+                <td className="px-6 py-3">{usuario.apellido_paterno}</td>
+                <td className="px-6 py-3">{usuario.apellido_materno}</td>
                 <td className="px-6 py-3">{usuario.email}</td>
+                <td className="px-6 py-3">{usuario.fecha_nacimiento}</td>
+                <td className="px-6 py-3">{usuario.direccion}</td>
                 <td className="px-6 py-3">{usuario.rol}</td>
                 <td className="px-6 py-3 text-center">
                   <button
@@ -104,36 +178,72 @@ export const UsuariosTable = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded p-6 w-96">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded p-6 w-full max-w-2xl max-h-96 overflow-y-auto">
             <h3 className="text-lg font-bold mb-4">
               {editingId ? "Editar Usuario" : "Nuevo Usuario"}
             </h3>
 
-            <div className="space-y-3 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <input
                 type="text"
                 placeholder="Nombre"
                 value={form.nombre}
                 onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Apellido Paterno"
+                value={form.apellido_paterno}
+                onChange={(e) =>
+                  setForm({ ...form, apellido_paterno: e.target.value })
+                }
+                className="px-3 py-2 border border-slate-300 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Apellido Materno"
+                value={form.apellido_materno}
+                onChange={(e) =>
+                  setForm({ ...form, apellido_materno: e.target.value })
+                }
+                className="px-3 py-2 border border-slate-300 rounded"
               />
               <input
                 type="email"
                 placeholder="Email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded"
+              />
+              <input
+                type="date"
+                placeholder="Fecha de Nacimiento"
+                value={form.fecha_nacimiento}
+                onChange={(e) =>
+                  setForm({ ...form, fecha_nacimiento: e.target.value })
+                }
+                className="px-3 py-2 border border-slate-300 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Dirección"
+                value={form.direccion}
+                onChange={(e) =>
+                  setForm({ ...form, direccion: e.target.value })
+                }
+                className="px-3 py-2 border border-slate-300 rounded"
               />
               <select
                 value={form.rol}
                 onChange={(e) => setForm({ ...form, rol: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded md:col-span-2"
               >
                 <option value="">Seleccionar rol</option>
                 <option value="Administrador">Administrador</option>
-                <option value="Mesero">Mesero</option>
-                <option value="Chef">Chef</option>
+                <option value="Vendedor">Vendedor</option>
+                <option value="Recepcionista">Recepcionista</option>
               </select>
             </div>
 
