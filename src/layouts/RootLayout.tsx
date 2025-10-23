@@ -4,12 +4,14 @@ import { Footer } from "../components/commons/Footer";
 
 export const RootLayout = () => {
   return (
-    <div className="h-screen flex flex-col">
-      <Navbar />
-
-      <Outlet />
-
-      <Footer />
-    </div>
+    <>
+      <div className="h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 overflow-y-auto p-5">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 };
