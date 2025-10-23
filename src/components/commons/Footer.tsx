@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 
 export const Footer = () => {
   const navigate = useNavigate();
@@ -17,12 +17,7 @@ export const Footer = () => {
         <p className="font-semibold uppercase tracking-tighter">
           no se que poner aquiii
         </p>
-        <button
-          onClick={() => window.open("/sidebar", "_blank")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors w-fit"
-        >
-          Ir a otra página
-        </button>
+        <NavLink to="/administrator">Ir a Administración</NavLink>
       </div>
     </footer>
   );
