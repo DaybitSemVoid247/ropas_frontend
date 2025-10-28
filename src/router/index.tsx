@@ -6,7 +6,7 @@ import { Sidebar } from "../administrator/Sidebar";
 import { Productos } from "../administrator/pages_administrator/Productos";
 import { Estadisticas } from "../administrator/pages_administrator/estadisticas";
 import { Pedidos } from "../administrator/pages_administrator/pedidos";
-import { Diseñador } from "../administrator/pages_administrator/diseñador";
+
 import InicioSesionUsuarios from "../components/commons/login";
 import RegistroUsuarios from "../components/commons/form";
 
@@ -60,10 +60,6 @@ export const router = createBrowserRouter([
       {
         path: "pedidos",
         element: <Pedidos />,
-      },
-      {
-        path: "diseñador",
-        element: <Diseñador />,
       },
     ],
   },
