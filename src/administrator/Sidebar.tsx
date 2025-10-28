@@ -32,12 +32,6 @@ const sidebarLinks = [
     href: "/administrator/pedidos",
     icon: HiOutlineShoppingBag,
   },
-  {
-    id: 5,
-    title: "Diseñador",
-    href: "/administrator/diseñador",
-    icon: HiUserCircle,
-  },
 ];
 
 export const Sidebar = () => {
