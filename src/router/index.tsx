@@ -9,6 +9,8 @@ import { Pedidos } from "../administrator/pages_administrator/pedidos";
 
 import InicioSesionUsuarios from "../components/commons/login";
 import RegistroUsuarios from "../components/commons/form";
+import Categorias from "../pages/categorias";
+import Articulos from "../pages/articulos";
 
 export const router = createBrowserRouter([
   {
@@ -20,12 +22,12 @@ export const router = createBrowserRouter([
         element: <div>inicio</div>,
       },
       {
-        path: "productos",
-        element: <div>productos</div>,
+        path: "articulos",
+        element: <Articulos />,
       },
       {
         path: "categorias",
-        element: <div>categorias</div>,
+        element: <Categorias />,
       },
       {
         path: "/login",
