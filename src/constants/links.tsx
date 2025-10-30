@@ -6,13 +6,13 @@ export const navbarLinks = [
   },
   {
     id: 2,
-    title: "Productos",
-    href: "/",
+    title: "Articulos",
+    href: "/articulos",
   },
 
   {
-    id: 1,
-    title: "categorias",
-    href: "/",
+    id: 3,
+    title: "Categorias",
+    href: "/categorias",
   },
 ];
