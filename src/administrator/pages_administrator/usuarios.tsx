@@ -28,6 +28,40 @@ export const UsuariosTable = () => {
     contraseña: "",
   });
 
+  // Función para formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+  const formatearFecha = (fecha: string): string => {
+    if (!fecha) return "";
+
+    // Si la fecha ya viene en formato DD/MM/YYYY, la retorna
+    if (fecha.includes("/")) return fecha;
+
+    // Si viene en formato YYYY-MM-DD (del input type="date")
+    const partes = fecha.split("-");
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    return fecha;
+  };
+
+  // Función para convertir de DD/MM/YYYY a YYYY-MM-DD (para el input)
+  const fechaParaInput = (fecha: string): string => {
+    if (!fecha) return "";
+
+    // Si ya está en formato YYYY-MM-DD
+    if (fecha.includes("-") && fecha.split("-")[0].length === 4) {
+      return fecha;
+    }
+
+    // Si está en formato DD/MM/YYYY
+    const partes = fecha.split("/");
+    if (partes.length === 3) {
+      return `${partes[2]}-${partes[1]}-${partes[0]}`;
+    }
+
+    return fecha;
+  };
+
   useEffect(() => {
     const usuariosInicial: Usuario[] = [
       {
@@ -36,7 +70,7 @@ export const UsuariosTable = () => {
         apellido_paterno: "García",
         apellido_materno: "López",
         email: "gabi@gmail.com",
-        fecha_nacimiento: "06-10-2002",
+        fecha_nacimiento: "06/10/2002",
         direccion: "Achachicala, La Paz",
         rol: "Administrador",
         contraseña: "123456",
@@ -47,7 +81,7 @@ export const UsuariosTable = () => {
         apellido_paterno: "III",
         apellido_materno: "De Valaquia",
         email: "vladelempalador@gmail.com",
-        fecha_nacimiento: "30-12-1431",
+        fecha_nacimiento: "30/12/1431",
         direccion: "Sighișoara, Romania",
         rol: "Administrador",
         contraseña: "1234567",
@@ -78,7 +112,7 @@ export const UsuariosTable = () => {
       apellido_paterno: usuario.apellido_paterno,
       apellido_materno: usuario.apellido_materno,
       email: usuario.email,
-      fecha_nacimiento: usuario.fecha_nacimiento,
+      fecha_nacimiento: fechaParaInput(usuario.fecha_nacimiento),
       direccion: usuario.direccion,
       rol: usuario.rol,
       contraseña: usuario.contraseña || "",
@@ -103,14 +137,23 @@ export const UsuariosTable = () => {
       return;
     }
 
+    // Guardar la fecha en formato DD/MM/YYYY
+    const formConFechaFormateada = {
+      ...form,
+      fecha_nacimiento: formatearFecha(form.fecha_nacimiento),
+    };
+
     let usuariosActualizados;
 
     if (editingId) {
       usuariosActualizados = usuarios.map((u) =>
-        u.id === editingId ? { ...u, ...form } : u
+        u.id === editingId ? { ...u, ...formConFechaFormateada } : u
       );
     } else {
-      usuariosActualizados = [...usuarios, { id: Date.now(), ...form }];
+      usuariosActualizados = [
+        ...usuarios,
+        { id: Date.now(), ...formConFechaFormateada },
+      ];
     }
 
     setUsuarios(usuariosActualizados);
@@ -178,8 +221,17 @@ export const UsuariosTable = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded p-6 w-full max-w-2xl max-h-96 overflow-y-auto">
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+        >
+          <div
+            className="rounded-lg p-6 w-full max-w-2xl max-h-96 overflow-y-auto border-2 border-slate-300 shadow-2xl"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
             <h3 className="text-lg font-bold mb-4">
               {editingId ? "Editar Usuario" : "Nuevo Usuario"}
             </h3>
@@ -190,7 +242,7 @@ export const UsuariosTable = () => {
                 placeholder="Nombre"
                 value={form.nombre}
                 onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                className="px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded bg-white"
               />
               <input
                 type="text"
@@ -199,7 +251,7 @@ export const UsuariosTable = () => {
                 onChange={(e) =>
                   setForm({ ...form, apellido_paterno: e.target.value })
                 }
-                className="px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded bg-white"
               />
               <input
                 type="text"
@@ -208,14 +260,14 @@ export const UsuariosTable = () => {
                 onChange={(e) =>
                   setForm({ ...form, apellido_materno: e.target.value })
                 }
-                className="px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded bg-white"
               />
               <input
                 type="email"
                 placeholder="Email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded bg-white"
               />
               <input
                 type="date"
@@ -224,7 +276,7 @@ export const UsuariosTable = () => {
                 onChange={(e) =>
                   setForm({ ...form, fecha_nacimiento: e.target.value })
                 }
-                className="px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded bg-white"
               />
               <input
                 type="text"
@@ -233,12 +285,12 @@ export const UsuariosTable = () => {
                 onChange={(e) =>
                   setForm({ ...form, direccion: e.target.value })
                 }
-                className="px-3 py-2 border border-slate-300 rounded"
+                className="px-3 py-2 border border-slate-300 rounded bg-white"
               />
               <select
                 value={form.rol}
                 onChange={(e) => setForm({ ...form, rol: e.target.value })}
-                className="px-3 py-2 border border-slate-300 rounded md:col-span-2"
+                className="px-3 py-2 border border-slate-300 rounded md:col-span-2 bg-white"
               >
                 <option value="">Seleccionar rol</option>
                 <option value="Administrador">Administrador</option>
@@ -250,7 +302,7 @@ export const UsuariosTable = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 px-3 py-2 border border-slate-300 rounded hover:bg-slate-50"
+                className="flex-1 px-3 py-2 border border-slate-300 rounded hover:bg-slate-50 bg-white"
               >
                 Cancelar
               </button>
