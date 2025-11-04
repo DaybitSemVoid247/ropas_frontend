@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
@@ -18,6 +18,7 @@ interface FormData {
 
 export default function RegistroUsuarios() {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState<FormData>({
     nombre: "",
@@ -30,23 +31,86 @@ export default function RegistroUsuarios() {
     confirmarContraseña: "",
   });
 
+  useEffect(() => {
+    // Prevenir scroll en el body
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      // Restaurar scroll cuando el componente se desmonte
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    // Validar que nombre y apellidos solo contengan letras y espacios
+    if (
+      name === "nombre" ||
+      name === "apellido_paterno" ||
+      name === "apellido_materno"
+    ) {
+      const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+      if (!soloLetras.test(value)) {
+        setError(
+          `El campo ${name.replace("_", " ")} solo puede contener letras`
+        );
+        return;
+      } else {
+        setError("");
+      }
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
+
+    // Validar que los campos de nombre no tengan números
+    const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+
+    if (!soloLetras.test(formData.nombre)) {
+      setError("El nombre solo puede contener letras");
+      return;
+    }
+
+    if (!soloLetras.test(formData.apellido_paterno)) {
+      setError("El apellido paterno solo puede contener letras");
+      return;
+    }
+
+    if (!soloLetras.test(formData.apellido_materno)) {
+      setError("El apellido materno solo puede contener letras");
+      return;
+    }
+
+    if (formData.contraseña.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
 
     if (formData.contraseña !== formData.confirmarContraseña) {
-      alert("Las contraseñas no coinciden");
+      setError("Las contraseñas no coinciden");
       return;
     }
 
     const usuariosGuardados = localStorage.getItem("usuarios");
     const usuarios = usuariosGuardados ? JSON.parse(usuariosGuardados) : [];
+
+    // Verificar si el correo ya existe
+    const correoExiste = usuarios.some(
+      (user: any) => user.email === formData.correo_electronico
+    );
+
+    if (correoExiste) {
+      setError("Este correo electrónico ya está registrado");
+      return;
+    }
 
     const nuevoUsuario = {
       id: Date.now(),
@@ -79,17 +143,29 @@ export default function RegistroUsuarios() {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 p-6">
+    <div
+      className="w-full min-h-screen flex items-center justify-center p-6 overflow-auto bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url('/public/Diseño sin título.jpg')",
+        backgroundColor: "#f0f9ff",
+      }}
+    >
       <div
-        className="w-full max-w-4xl bg-amber-50 border-4 border-amber-900 shadow-lg p-8"
+        className="relative z-10 w-full max-w-4xl bg-white/50 backdrop-blur-sm border-4 border-black-900 shadow-2xl p-8 my-6"
         style={{ borderRadius: "2px" }}
       >
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-amber-900 mb-2">
+          <h2 className="text-4xl font-bold text-black-900 mb-2">
             REGISTRO DE USUARIOS
           </h2>
           <div className="w-16 h-1 bg-cyan-600 mx-auto"></div>
         </div>
+
+        {error && (
+          <div className="mb-6 bg-red-100 border-l-4 border-red-600 p-3 text-red-800 font-semibold">
+            {error}
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
@@ -103,7 +179,7 @@ export default function RegistroUsuarios() {
               name="nombre"
               value={formData.nombre}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -116,7 +192,7 @@ export default function RegistroUsuarios() {
               name="apellido_paterno"
               value={formData.apellido_paterno}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -129,7 +205,7 @@ export default function RegistroUsuarios() {
               name="apellido_materno"
               value={formData.apellido_materno}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -142,7 +218,7 @@ export default function RegistroUsuarios() {
               name="correo_electronico"
               value={formData.correo_electronico}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -154,7 +230,7 @@ export default function RegistroUsuarios() {
               name="fecha_nacimiento"
               value={formData.fecha_nacimiento}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -167,7 +243,7 @@ export default function RegistroUsuarios() {
               name="direccion"
               value={formData.direccion}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -176,11 +252,11 @@ export default function RegistroUsuarios() {
             <RiLockPasswordLine className="text-2xl text-cyan-600 mr-3 flex-shrink-0" />
             <input
               type="password"
-              placeholder="Contraseña"
+              placeholder="Contraseña (mínimo 6 caracteres)"
               name="contraseña"
               value={formData.contraseña}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -193,7 +269,7 @@ export default function RegistroUsuarios() {
               name="confirmarContraseña"
               value={formData.confirmarContraseña}
               onChange={handleChange}
-              className="w-full bg-transparent outline-none placeholder-amber-800 text-amber-950 font-medium"
+              className="w-full bg-transparent outline-none placeholder-black-800 text-black-950 font-medium"
               required
             />
           </div>
@@ -201,7 +277,7 @@ export default function RegistroUsuarios() {
           <div className="md:col-span-2 flex justify-center pt-4">
             <button
               type="submit"
-              className="bg-cyan-600 text-white px-8 py-3 border-2 border-cyan-700 hover:bg-cyan-700 hover:shadow-lg transition-all font-bold text-lg"
+              className="bg-cyan-600 text-gray-50 px-8 py-3 border-2 border-cyan-700 hover:bg-cyan-700 hover:shadow-lg transition-all font-bold text-lg"
               style={{ borderRadius: "2px" }}
             >
               REGISTRARSE
@@ -209,7 +285,7 @@ export default function RegistroUsuarios() {
           </div>
         </form>
 
-        <p className="text-center mt-8 pt-6 border-t-2 border-amber-900 text-amber-900 font-semibold">
+        <p className="text-center mt-8 pt-6 border-t-2 border-black-900 text-black-900 font-semibold">
           ¿Ya tienes cuenta?
           <button
             onClick={() => navigate("/login")}
