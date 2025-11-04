@@ -11,6 +11,7 @@ import InicioSesionUsuarios from "../components/commons/login";
 import RegistroUsuarios from "../components/commons/form";
 import Categorias from "../pages/categorias";
 import Articulos from "../pages/articulos";
+import { LoginLayout } from "../layouts/LoginLayout";
 
 export const router = createBrowserRouter([
   {
@@ -28,14 +29,6 @@ export const router = createBrowserRouter([
       {
         path: "categorias",
         element: <Categorias />,
-      },
-      {
-        path: "/login",
-        element: <InicioSesionUsuarios />,
-      },
-      {
-        path: "/registro",
-        element: <RegistroUsuarios />,
       },
     ],
   },
@@ -62,6 +55,20 @@ export const router = createBrowserRouter([
       {
         path: "pedidos",
         element: <Pedidos />,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <LoginLayout />,
+    children: [
+      {
+        index: true,
+        element: <InicioSesionUsuarios />,
+      },
+      {
+        path: "registro",
+        element: <RegistroUsuarios />,
       },
     ],
   },
