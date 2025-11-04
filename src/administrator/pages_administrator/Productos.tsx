@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { HiOutlineTrash, HiOutlinePencil, HiOutlinePlus } from "react-icons/hi";
+import {
+  HiOutlineTrash,
+  HiOutlinePencil,
+  HiOutlinePlus,
+  HiOutlineSearch,
+} from "react-icons/hi";
 
 interface Producto {
   id: number;
@@ -36,6 +41,46 @@ export const Productos = () => {
       talla: "S",
       stock: 8,
     },
+    {
+      id: 4,
+      nombre: "Chaqueta Deportiva",
+      categoria: "Abrigos",
+      precio: 320.0,
+      talla: "L",
+      stock: 12,
+    },
+    {
+      id: 5,
+      nombre: "Falda Plisada",
+      categoria: "Faldas",
+      precio: 95.0,
+      talla: "M",
+      stock: 18,
+    },
+    {
+      id: 6,
+      nombre: "Camisa Casual",
+      categoria: "Camisas",
+      precio: 85.0,
+      talla: "S",
+      stock: 25,
+    },
+    {
+      id: 7,
+      nombre: "Pantalón Formal",
+      categoria: "Pantalones",
+      precio: 220.0,
+      talla: "34",
+      stock: 10,
+    },
+    {
+      id: 8,
+      nombre: "Vestido Elegante",
+      categoria: "Vestidos",
+      precio: 380.0,
+      talla: "M",
+      stock: 5,
+    },
   ]);
 
   const [showModal, setShowModal] = useState(false);
@@ -47,6 +92,12 @@ export const Productos = () => {
     talla: "",
     stock: "",
   });
+
+  // Estados para filtros y paginación
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const handleAdd = () => {
     setEditingId(null);
@@ -100,6 +151,33 @@ export const Productos = () => {
     setShowModal(false);
   };
 
+  // Filtrar productos
+  const productosFiltrados = productos.filter((producto) => {
+    const matchSearch = producto.nombre
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchCategory =
+      categoryFilter === "" || producto.categoria === categoryFilter;
+    return matchSearch && matchCategory;
+  });
+
+  // Paginación
+  const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const productosActuales = productosFiltrados.slice(startIndex, endIndex);
+
+  // Resetear página cuando cambian los filtros
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategoryFilter(value);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6 flex justify-between items-center">
@@ -115,7 +193,48 @@ export const Productos = () => {
         </button>
       </div>
 
-      <div className="overflow-x-auto shadow-md rounded-lg bg-white">
+      {/* Filtros */}
+      <div className="mb-6 bg-white shadow-md rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Buscador */}
+          <div className="relative">
+            <HiOutlineSearch
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+
+          {/* Filtro por categoría */}
+          <select
+            value={categoryFilter}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          >
+            <option value="">Todas las categorías</option>
+            <option value="Camisas">Camisas</option>
+            <option value="Pantalones">Pantalones</option>
+            <option value="Vestidos">Vestidos</option>
+            <option value="Abrigos">Abrigos</option>
+            <option value="Faldas">Faldas</option>
+          </select>
+        </div>
+
+        {/* Contador de resultados */}
+        <div className="mt-3 text-sm text-slate-600">
+          Mostrando {productosActuales.length} de {productosFiltrados.length}{" "}
+          productos
+        </div>
+      </div>
+
+      {/* Tabla */}
+      <div className="overflow-x-auto shadow-md rounded-lg bg-white mb-6">
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-200 font-semibold">
             <tr>
@@ -128,47 +247,105 @@ export const Productos = () => {
             </tr>
           </thead>
           <tbody>
-            {productos.map((producto, index) => (
-              <tr
-                key={producto.id}
-                className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
-              >
-                <td className="px-6 py-3 font-medium">{producto.nombre}</td>
-                <td className="px-6 py-3">
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                    {producto.categoria}
-                  </span>
-                </td>
-                <td className="px-6 py-3">{producto.talla}</td>
-                <td className="px-6 py-3 font-semibold">
-                  Bs. {producto.precio.toFixed(2)}
-                </td>
-                <td className="px-6 py-3">{producto.stock} unidades</td>
-                <td className="px-6 py-3 text-center">
-                  <button
-                    onClick={() => handleEdit(producto)}
-                    className="text-blue-600 hover:text-blue-800 mr-3"
-                    title="Editar"
-                  >
-                    <HiOutlinePencil size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(producto.id)}
-                    className="text-red-600 hover:text-red-800"
-                    title="Eliminar"
-                  >
-                    <HiOutlineTrash size={18} />
-                  </button>
+            {productosActuales.length > 0 ? (
+              productosActuales.map((producto, index) => (
+                <tr
+                  key={producto.id}
+                  className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
+                >
+                  <td className="px-6 py-3 font-medium">{producto.nombre}</td>
+                  <td className="px-6 py-3">
+                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                      {producto.categoria}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3">{producto.talla}</td>
+                  <td className="px-6 py-3 font-semibold">
+                    Bs. {producto.precio.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-3">{producto.stock} unidades</td>
+                  <td className="px-6 py-3 text-center">
+                    <button
+                      onClick={() => handleEdit(producto)}
+                      className="text-blue-600 hover:text-blue-800 mr-3"
+                      title="Editar"
+                    >
+                      <HiOutlinePencil size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(producto.id)}
+                      className="text-red-600 hover:text-red-800"
+                      title="Eliminar"
+                    >
+                      <HiOutlineTrash size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-6 py-8 text-center text-slate-500"
+                >
+                  No se encontraron productos
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2">
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition bg-white"
+          >
+            Anterior
+          </button>
+
+          <div className="flex gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-4 py-2 rounded-lg transition ${
+                  currentPage === page
+                    ? "bg-cyan-600 text-white"
+                    : "border border-slate-300 hover:bg-slate-100 bg-white"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition bg-white"
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
+
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+        >
+          <div
+            className="rounded-lg p-6 w-full max-w-md border-2 border-slate-300 shadow-2xl"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
             <h3 className="text-xl font-bold mb-4 text-slate-800">
               {editingId ? "Editar Producto" : "Nuevo Producto"}
             </h3>
@@ -183,7 +360,7 @@ export const Productos = () => {
                   placeholder="Ej: Camisa Formal"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
                 />
               </div>
 
@@ -196,7 +373,7 @@ export const Productos = () => {
                   onChange={(e) =>
                     setForm({ ...form, categoria: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
                 >
                   <option value="">Seleccionar categoría</option>
                   <option value="Camisas">Camisas</option>
@@ -216,7 +393,7 @@ export const Productos = () => {
                   placeholder="S, M, L, XL..."
                   value={form.talla}
                   onChange={(e) => setForm({ ...form, talla: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
                 />
               </div>
 
@@ -230,7 +407,7 @@ export const Productos = () => {
                   placeholder="0.00"
                   value={form.precio}
                   onChange={(e) => setForm({ ...form, precio: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
                 />
               </div>
 
@@ -243,7 +420,7 @@ export const Productos = () => {
                   placeholder="0"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
                 />
               </div>
             </div>
@@ -251,7 +428,7 @@ export const Productos = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium"
+                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium bg-white"
               >
                 Cancelar
               </button>
