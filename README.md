@@ -12,7 +12,9 @@ Aplicación web desarrollada con **React**, **TypeScript** y **Vite**
 - **React Icons** – Iconos listos para usar
 - **ESLint + Prettier** – Para mantener código limpio y consistente
 
-
 ## ¿Cómo ejecutar el código?
+
+- **git clone https://github.com/DaybitSemVoid247/ropas_frontend.git** - para clonar el repositorio
+- **cd "nombre de la carpeta"** - accede a la carpeta donde esta el proyecto
 - **npm install** - instalar las dependencias
 - **npm run dev** - iniciar la ejecución del proyecto
