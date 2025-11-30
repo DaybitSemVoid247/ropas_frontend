@@ -11,3 +11,8 @@ Aplicación web desarrollada con **React**, **TypeScript** y **Vite**
 - **React Router** – Manejo de rutas y navegación en la app
 - **React Icons** – Iconos listos para usar
 - **ESLint + Prettier** – Para mantener código limpio y consistente
+
+
+## ¿Cómo ejecutar el código?
+- **npm install** - instalar las dependencias
+- **npm run dev** - iniciar la ejecución del proyecto
