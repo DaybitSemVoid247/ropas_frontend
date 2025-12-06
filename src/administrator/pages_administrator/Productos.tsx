@@ -104,7 +104,7 @@ const api = {
     }
   },
 
-  // 🆕 Cambiar estado activo/inactivo
+  // Cambiar estado activo/inactivo
   async toggleEstado(id: number, activo: boolean): Promise<Producto> {
     console.log("🔗 PATCH", `${API_URL}/productos/${id}/estado`, { activo });
     const response = await fetch(`${API_URL}/productos/${id}/estado`, {
@@ -166,7 +166,7 @@ export const Productos = () => {
   // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [estadoFilter, setEstadoFilter] = useState(""); // 🆕
+  const [estadoFilter, setEstadoFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
   const itemsPerPage = 5;
@@ -243,7 +243,7 @@ export const Productos = () => {
     }
   };
 
-  // 🆕 Función para cambiar estado
+  // Función para cambiar estado
   const handleToggleEstado = async (id: number, nuevoEstado: boolean) => {
     try {
       await api.toggleEstado(id, nuevoEstado);
@@ -369,7 +369,7 @@ export const Productos = () => {
     }
   };
 
-  // 🆕 Filtrar productos con estado
+  // Filtrar productos con estado
   const productosFiltrados = productos.filter((producto) => {
     const matchSearch = producto.nombre
       .toLowerCase()
@@ -402,7 +402,7 @@ export const Productos = () => {
     setCurrentPage(1);
   };
 
-  // 🆕 Handler para el filtro de estado
+  // Handler para el filtro de estado
   const handleEstadoChange = (value: string) => {
     setEstadoFilter(value);
     setCurrentPage(1);
@@ -410,7 +410,7 @@ export const Productos = () => {
 
   const getImageUrl = (imagen: string | null): string => {
     if (!imagen) {
-      return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop";
+      return "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&h=500&fit=crop";
     }
 
     if (imagen.startsWith("http")) {
@@ -436,14 +436,14 @@ export const Productos = () => {
     <div className="p-6">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-slate-800">
-          Inventario de Restaurante
+          Inventario de Ropa
         </h2>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 bg-[#d88c6f] text-white px-4 py-2 rounded-lg hover:bg-[#9e4e2f] transition"
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           <HiOutlinePlus size={18} />
-          Agregar Producto
+          Agregar Prenda
         </button>
       </div>
 
@@ -490,7 +490,7 @@ export const Productos = () => {
             <select
               value={categoryFilter}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">Todas las categorías</option>
               {categorias.map((cat) => (
@@ -500,11 +500,11 @@ export const Productos = () => {
               ))}
             </select>
 
-            {/* 🆕 Filtro por estado */}
+            {/* Filtro por estado */}
             <select
               value={estadoFilter}
               onChange={(e) => handleEstadoChange(e.target.value)}
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">Todos los estados</option>
               <option value="activo">Activos</option>
@@ -519,12 +519,12 @@ export const Productos = () => {
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-200 font-semibold">
             <tr>
-              <th className="px-6 py-3">Nombre</th>
+              <th className="px-6 py-3">Prenda</th>
               <th className="px-6 py-3">Categoría</th>
               <th className="px-6 py-3">Subcategoría</th>
               <th className="px-6 py-3">Precio</th>
-              <th className="px-6 py-3">Stock</th>
-              <th className="px-6 py-3">Estado</th> {/* 🆕 */}
+              <th className="px-6 py-3">Inventario</th>
+              <th className="px-6 py-3">Estado</th>
               <th className="px-6 py-3 text-center">Acciones</th>
             </tr>
           </thead>
@@ -553,7 +553,7 @@ export const Productos = () => {
                   <td className="px-6 py-3">
                     {producto.disponibilidad || 0} unidades
                   </td>
-                  {/* 🆕 Columna de estado con toggle */}
+                  {/* Columna de estado con toggle */}
                   <td className="px-6 py-3">
                     <button
                       onClick={() =>
@@ -592,7 +592,7 @@ export const Productos = () => {
                   colSpan={7}
                   className="px-6 py-8 text-center text-slate-500"
                 >
-                  No se encontraron productos
+                  No se encontraron prendas
                 </td>
               </tr>
             )}
@@ -603,7 +603,7 @@ export const Productos = () => {
       {/* Contador de resultados centrado */}
       <div className="text-center text-sm text-slate-600 mb-3">
         Mostrando {productosActuales.length} de {productosFiltrados.length}{" "}
-        productos
+        prendas
       </div>
 
       {/* Paginación */}
@@ -624,7 +624,7 @@ export const Productos = () => {
                 onClick={() => setCurrentPage(page)}
                 className={`px-4 py-2 rounded-lg transition ${
                   currentPage === page
-                    ? "bg-[#d88c6f] text-white"
+                    ? "bg-indigo-600 text-white"
                     : "border border-slate-300 hover:bg-slate-100 bg-white"
                 }`}
               >
@@ -657,20 +657,20 @@ export const Productos = () => {
             }}
           >
             <h3 className="text-xl font-bold mb-4 text-slate-800">
-              {editingId ? "Editar Producto" : "Nuevo Producto"}
+              {editingId ? "Editar Prenda" : "Nueva Prenda"}
             </h3>
 
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Nombre del producto
+                  Nombre de la prenda
                 </label>
                 <input
                   type="text"
-                  placeholder="Ej: Hamburguesa Clásica"
+                  placeholder="Ej: Camisa de Algodón"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 />
               </div>
 
@@ -679,13 +679,13 @@ export const Productos = () => {
                   Descripción
                 </label>
                 <textarea
-                  placeholder="Descripción del producto..."
+                  placeholder="Descripción de la prenda..."
                   value={form.descripcion}
                   onChange={(e) =>
                     setForm({ ...form, descripcion: e.target.value })
                   }
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 />
               </div>
 
@@ -698,7 +698,7 @@ export const Productos = () => {
                   onChange={(e) =>
                     setForm({ ...form, subcategoria: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
                   <option value="">Seleccionar subcategoría</option>
                   {categorias.map((cat) => (
@@ -725,13 +725,13 @@ export const Productos = () => {
                   placeholder="0.00"
                   value={form.precio}
                   onChange={(e) => setForm({ ...form, precio: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Stock
+                  Inventario
                 </label>
                 <input
                   type="number"
@@ -740,19 +740,19 @@ export const Productos = () => {
                   onChange={(e) =>
                     setForm({ ...form, disponibilidad: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Imagen del producto
+                  Imagen de la prenda
                 </label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImagenChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 />
                 {imagenPreview && (
                   <div className="mt-3">
@@ -792,7 +792,7 @@ export const Productos = () => {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-[#9e4e2f] transition font-medium"
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
               >
                 Guardar
               </button>
