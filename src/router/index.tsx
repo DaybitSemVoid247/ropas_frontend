@@ -9,9 +9,10 @@ import { Pedidos } from "../administrator/pages_administrator/pedidos";
 
 import InicioSesionUsuarios from "../components/commons/login";
 import RegistroUsuarios from "../components/commons/form";
-import Categorias from "../pages/categorias";
 import Articulos from "../pages/articulos";
 import { LoginLayout } from "../layouts/LoginLayout";
+import { CajeroPedidos } from "../administrator/cajero/cajero";
+import ProtectedRoute from "./rutasProtegidas";
 
 export const router = createBrowserRouter([
   {
@@ -26,27 +27,18 @@ export const router = createBrowserRouter([
   },
   {
     path: "/administrator",
-    element: <RootAdmin />,
+    element: <ProtectedRoute roles={["Administrador"]} />,
     children: [
       {
-        path: "sidebar",
-        element: <Sidebar />,
-      },
-      {
-        path: "productos",
-        element: <Productos />,
-      },
-      {
-        path: "usuarios",
-        element: <Usuario />,
-      },
-      {
-        path: "estadisticas",
-        element: <Estadisticas />,
-      },
-      {
-        path: "pedidos",
-        element: <Pedidos />,
+        element: <RootAdmin />,
+        children: [
+          { path: "sidebar", element: <Sidebar /> },
+          { path: "productos", element: <Productos /> },
+          { path: "usuarios", element: <Usuario /> },
+          { path: "estadisticas", element: <Estadisticas /> },
+          { path: "pedidos", element: <Pedidos /> },
+          { path: "cajero", element: <CajeroPedidos /> },
+        ],
       },
     ],
   },
