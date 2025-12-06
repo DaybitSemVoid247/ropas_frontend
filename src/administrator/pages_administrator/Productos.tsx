@@ -1,107 +1,273 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   HiOutlineTrash,
   HiOutlinePencil,
   HiOutlinePlus,
   HiOutlineSearch,
+  HiChevronDown,
+  HiChevronUp,
 } from "react-icons/hi";
+
+// Interfaces basadas en tu backend
+interface Categoria {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
+}
+
+interface Subcategoria {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  categoria: Categoria;
+  activo: boolean;
+}
 
 interface Producto {
   id: number;
   nombre: string;
-  categoria: string;
+  descripcion?: string;
   precio: number;
-  talla: string;
-  stock: number;
+  disponibilidad?: number;
+  imagen: string | null;
+  subcategoria: Subcategoria;
+  activo: boolean;
 }
 
-export const Productos = () => {
-  const [productos, setProductos] = useState<Producto[]>([
-    {
-      id: 1,
-      nombre: "Camisa Formal",
-      categoria: "Camisas",
-      precio: 120.0,
-      talla: "M",
-      stock: 15,
-    },
-    {
-      id: 2,
-      nombre: "Pantalón Jean",
-      categoria: "Pantalones",
-      precio: 180.0,
-      talla: "32",
-      stock: 22,
-    },
-    {
-      id: 3,
-      nombre: "Vestido Casual",
-      categoria: "Vestidos",
-      precio: 250.0,
-      talla: "S",
-      stock: 8,
-    },
-    {
-      id: 4,
-      nombre: "Chaqueta Deportiva",
-      categoria: "Abrigos",
-      precio: 320.0,
-      talla: "L",
-      stock: 12,
-    },
-    {
-      id: 5,
-      nombre: "Falda Plisada",
-      categoria: "Faldas",
-      precio: 95.0,
-      talla: "M",
-      stock: 18,
-    },
-    {
-      id: 6,
-      nombre: "Camisa Casual",
-      categoria: "Camisas",
-      precio: 85.0,
-      talla: "S",
-      stock: 25,
-    },
-    {
-      id: 7,
-      nombre: "Pantalón Formal",
-      categoria: "Pantalones",
-      precio: 220.0,
-      talla: "34",
-      stock: 10,
-    },
-    {
-      id: 8,
-      nombre: "Vestido Elegante",
-      categoria: "Vestidos",
-      precio: 380.0,
-      talla: "M",
-      stock: 5,
-    },
-  ]);
+// Configuración de la API
+const API_URL = "http://localhost:3000";
 
+// Servicio API
+const api = {
+  // Productos
+  async getProductos(): Promise<Producto[]> {
+    const response = await fetch(`${API_URL}/productos`);
+    if (!response.ok) throw new Error("Error al cargar productos");
+    return response.json();
+  },
+
+  async createProducto(data: any): Promise<Producto> {
+    console.log("🔗 POST", `${API_URL}/productos`, data);
+    const response = await fetch(`${API_URL}/productos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+    console.log("📥 Respuesta:", response.status, responseData);
+
+    if (!response.ok) {
+      throw new Error(
+        `Error al crear producto (${response.status}): ${JSON.stringify(
+          responseData
+        )}`
+      );
+    }
+    return responseData;
+  },
+
+  async updateProducto(id: number, data: any): Promise<Producto> {
+    console.log("🔗 PATCH", `${API_URL}/productos/${id}`, data);
+    const response = await fetch(`${API_URL}/productos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+    console.log("📥 Respuesta:", response.status, responseData);
+
+    if (!response.ok) {
+      throw new Error(
+        `Error al actualizar producto (${response.status}): ${JSON.stringify(
+          responseData
+        )}`
+      );
+    }
+    return responseData;
+  },
+
+  async deleteProducto(id: number): Promise<void> {
+    console.log("🔗 DELETE", `${API_URL}/productos/${id}`);
+    const response = await fetch(`${API_URL}/productos/${id}`, {
+      method: "DELETE",
+    });
+
+    console.log("📥 Respuesta DELETE:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Error al eliminar:", errorText);
+      throw new Error(`Error al eliminar producto (${response.status})`);
+    }
+  },
+
+  // 🆕 Cambiar estado activo/inactivo
+  async toggleEstado(id: number, activo: boolean): Promise<Producto> {
+    console.log("🔗 PATCH", `${API_URL}/productos/${id}/estado`, { activo });
+    const response = await fetch(`${API_URL}/productos/${id}/estado`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ activo }),
+    });
+
+    const responseData = await response.json();
+    console.log("📥 Respuesta toggle estado:", response.status, responseData);
+
+    if (!response.ok) {
+      throw new Error(
+        `Error al cambiar estado (${response.status}): ${JSON.stringify(
+          responseData
+        )}`
+      );
+    }
+    return responseData;
+  },
+
+  // Categorías
+  async getCategorias(): Promise<Categoria[]> {
+    const response = await fetch(`${API_URL}/categorias`);
+    if (!response.ok) throw new Error("Error al cargar categorías");
+    return response.json();
+  },
+
+  // Subcategorías
+  async getSubcategorias(): Promise<Subcategoria[]> {
+    const response = await fetch(`${API_URL}/subcategorias`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error de subcategorías:", response.status, errorText);
+      throw new Error(`Error al cargar subcategorías (${response.status})`);
+    }
+    return response.json();
+  },
+};
+
+export const Productos = () => {
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({
     nombre: "",
-    categoria: "",
+    descripcion: "",
     precio: "",
-    talla: "",
-    stock: "",
+    disponibilidad: "",
+    imagen: "",
+    subcategoria: "",
   });
+
+  const [imagenPreview, setImagenPreview] = useState<string>("");
 
   // Estados para filtros y paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [estadoFilter, setEstadoFilter] = useState(""); // 🆕
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(true);
   const itemsPerPage = 5;
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
+      console.log("🔍 Intentando conectar a:", API_URL);
+
+      const productosData = await api.getProductos();
+      const categoriasData = await api.getCategorias();
+
+      console.log("✅ Productos cargados:", productosData);
+      console.log("✅ Categorías cargadas:", categoriasData);
+
+      let subcategoriasData: Subcategoria[] = [];
+      try {
+        subcategoriasData = await api.getSubcategorias();
+        console.log("✅ Subcategorías cargadas:", subcategoriasData);
+      } catch (subError) {
+        console.warn(
+          "⚠️ No se pudieron cargar subcategorías del endpoint, extrayendo de productos..."
+        );
+        const subcatsMap = new Map<number, Subcategoria>();
+        productosData.forEach((p) => {
+          if (p.subcategoria && p.subcategoria.id) {
+            subcatsMap.set(p.subcategoria.id, p.subcategoria);
+          }
+        });
+        subcategoriasData = Array.from(subcatsMap.values());
+        console.log(
+          "✅ Subcategorías extraídas de productos:",
+          subcategoriasData
+        );
+      }
+
+      setProductos(
+        productosData.map((p) => ({
+          ...p,
+          precio: Number(p.precio),
+          disponibilidad: Number(p.disponibilidad || 0),
+        }))
+      );
+      setCategorias(categoriasData.filter((c) => c.activo));
+      setSubcategorias(subcategoriasData.filter((s) => s.activo));
+    } catch (error: any) {
+      console.error("❌ Error detallado:", error);
+      console.error("❌ URL intentada:", API_URL);
+
+      let mensaje = "Error al cargar los datos. ";
+
+      if (error.message.includes("Failed to fetch")) {
+        mensaje += `\n\n🔴 No se puede conectar a ${API_URL}\n\n`;
+        mensaje += "Posibles causas:\n";
+        mensaje += "1. El backend no está corriendo\n";
+        mensaje += "2. La URL es incorrecta\n";
+        mensaje += "3. CORS no está habilitado en el backend";
+      } else if (error.message.includes("404")) {
+        mensaje += `\n\n🔴 Endpoint no encontrado (404)\n\n`;
+        mensaje +=
+          "Verifica que las rutas /productos, /categorias y /subcategorias existan";
+      } else {
+        mensaje += error.message;
+      }
+
+      alert(mensaje);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 Función para cambiar estado
+  const handleToggleEstado = async (id: number, nuevoEstado: boolean) => {
+    try {
+      await api.toggleEstado(id, nuevoEstado);
+      await cargarDatos();
+      alert(
+        `Producto ${nuevoEstado ? "activado" : "desactivado"} correctamente`
+      );
+    } catch (error) {
+      console.error("Error al cambiar estado:", error);
+      alert("Error al cambiar el estado del producto");
+    }
+  };
 
   const handleAdd = () => {
     setEditingId(null);
-    setForm({ nombre: "", categoria: "", precio: "", talla: "", stock: "" });
+    setForm({
+      nombre: "",
+      descripcion: "",
+      precio: "",
+      disponibilidad: "",
+      imagen: "",
+      subcategoria: "",
+    });
+    setImagenPreview("");
     setShowModal(true);
   };
 
@@ -109,56 +275,115 @@ export const Productos = () => {
     setEditingId(producto.id);
     setForm({
       nombre: producto.nombre,
-      categoria: producto.categoria,
+      descripcion: producto.descripcion || "",
       precio: producto.precio.toString(),
-      talla: producto.talla,
-      stock: producto.stock.toString(),
+      disponibilidad: (producto.disponibilidad || 0).toString(),
+      imagen: producto.imagen || "",
+      subcategoria: producto.subcategoria.id.toString(),
     });
+    setImagenPreview(producto.imagen || "");
     setShowModal(true);
   };
 
-  const handleDelete = (id: number) => {
-    setProductos(productos.filter((p) => p.id !== id));
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Estás seguro de desactivar este producto?")) return;
+
+    try {
+      await api.deleteProducto(id);
+      await cargarDatos();
+      alert("Producto desactivado correctamente");
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Error al eliminar el producto");
+    }
   };
 
-  const handleSave = () => {
+  const [imagenFile, setImagenFile] = useState<File | null>(null);
+
+  const handleImagenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Selecciona una imagen válida");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("La imagen no debe superar los 5MB");
+      return;
+    }
+
+    setImagenFile(file);
+    setImagenPreview(URL.createObjectURL(file));
+  };
+
+  const handleSave = async () => {
     if (
       !form.nombre ||
-      !form.categoria ||
       !form.precio ||
-      !form.talla ||
-      !form.stock
-    )
+      !form.disponibilidad ||
+      !form.subcategoria
+    ) {
+      alert("Por favor completa todos los campos obligatorios");
       return;
-
-    const productoData = {
-      nombre: form.nombre,
-      categoria: form.categoria,
-      precio: parseFloat(form.precio),
-      talla: form.talla,
-      stock: parseInt(form.stock),
-    };
-
-    if (editingId) {
-      setProductos(
-        productos.map((p) =>
-          p.id === editingId ? { ...p, ...productoData } : p
-        )
-      );
-    } else {
-      setProductos([...productos, { id: Date.now(), ...productoData }]);
     }
-    setShowModal(false);
+
+    const formData = new FormData();
+    formData.append("nombre", form.nombre);
+    formData.append("descripcion", form.descripcion);
+    formData.append("precio", form.precio);
+    formData.append("disponibilidad", form.disponibilidad);
+    formData.append("subcategoria", form.subcategoria);
+
+    if (imagenFile) {
+      formData.append("imagen", imagenFile);
+    }
+
+    try {
+      const url = editingId
+        ? `${API_URL}/productos/${editingId}`
+        : `${API_URL}/productos/upload`;
+
+      const method = editingId ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      const data = await response.json();
+      console.log("Servidor responde:", data);
+
+      if (!response.ok) throw new Error("Error en el servidor");
+
+      alert(editingId ? "Producto actualizado" : "Producto creado");
+
+      await cargarDatos();
+      setShowModal(false);
+      setImagenFile(null);
+      setImagenPreview("");
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar el producto");
+    }
   };
 
-  // Filtrar productos
+  // 🆕 Filtrar productos con estado
   const productosFiltrados = productos.filter((producto) => {
     const matchSearch = producto.nombre
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchCategory =
-      categoryFilter === "" || producto.categoria === categoryFilter;
-    return matchSearch && matchCategory;
+      categoryFilter === "" ||
+      producto.subcategoria?.categoria?.id === parseInt(categoryFilter);
+    const matchEstado =
+      estadoFilter === ""
+        ? true
+        : estadoFilter === "activo"
+        ? producto.activo
+        : !producto.activo;
+    return matchSearch && matchCategory && matchEstado;
   });
 
   // Paginación
@@ -167,7 +392,6 @@ export const Productos = () => {
   const endIndex = startIndex + itemsPerPage;
   const productosActuales = productosFiltrados.slice(startIndex, endIndex);
 
-  // Resetear página cuando cambian los filtros
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
@@ -178,71 +402,129 @@ export const Productos = () => {
     setCurrentPage(1);
   };
 
+  // 🆕 Handler para el filtro de estado
+  const handleEstadoChange = (value: string) => {
+    setEstadoFilter(value);
+    setCurrentPage(1);
+  };
+
+  const getImageUrl = (imagen: string | null): string => {
+    if (!imagen) {
+      return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop";
+    }
+
+    if (imagen.startsWith("http")) {
+      return imagen;
+    }
+
+    const filename = imagen.replace(/^\/uploads\/productos\//, "");
+    return `${API_URL}/uploads/productos/${filename}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-800 mx-auto mb-4"></div>
+          <p className="text-gray-700 text-lg">Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-slate-800">
-          Inventario de Ropa
+          Inventario de Restaurante
         </h2>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition"
+          className="flex items-center gap-2 bg-[#d88c6f] text-white px-4 py-2 rounded-lg hover:bg-[#9e4e2f] transition"
         >
           <HiOutlinePlus size={18} />
           Agregar Producto
         </button>
       </div>
 
-      {/* Filtros */}
-      <div className="mb-6 bg-white shadow-md rounded-lg p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Buscador */}
-          <div className="relative">
-            <HiOutlineSearch
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Buscar por nombre..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-          </div>
-
-          {/* Filtro por categoría */}
-          <select
-            value={categoryFilter}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          >
-            <option value="">Todas las categorías</option>
-            <option value="Camisas">Camisas</option>
-            <option value="Pantalones">Pantalones</option>
-            <option value="Vestidos">Vestidos</option>
-            <option value="Abrigos">Abrigos</option>
-            <option value="Faldas">Faldas</option>
-          </select>
-        </div>
-
-        {/* Contador de resultados */}
-        <div className="mt-3 text-sm text-slate-600">
-          Mostrando {productosActuales.length} de {productosFiltrados.length}{" "}
-          productos
-        </div>
+      {/* Botón para mostrar/ocultar filtros */}
+      <div className="mb-4">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg transition font-medium"
+        >
+          {showFilters ? (
+            <>
+              <HiChevronUp size={20} />
+              Ocultar Filtros
+            </>
+          ) : (
+            <>
+              <HiChevronDown size={20} />
+              Mostrar Filtros
+            </>
+          )}
+        </button>
       </div>
 
+      {/* Filtros colapsables */}
+      {showFilters && (
+        <div className="mb-6 bg-white shadow-md rounded-lg p-4 transition-all duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Buscador */}
+            <div className="relative">
+              <HiOutlineSearch
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Buscar por nombre..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:bg-white"
+              />
+            </div>
+
+            {/* Filtro por categoría */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            >
+              <option value="">Todas las categorías</option>
+              {categorias.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.nombre}
+                </option>
+              ))}
+            </select>
+
+            {/* 🆕 Filtro por estado */}
+            <select
+              value={estadoFilter}
+              onChange={(e) => handleEstadoChange(e.target.value)}
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            >
+              <option value="">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* Tabla */}
-      <div className="overflow-x-auto shadow-md rounded-lg bg-white mb-6">
+      <div className="overflow-x-auto shadow-md rounded-lg bg-white mb-4">
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-200 font-semibold">
             <tr>
               <th className="px-6 py-3">Nombre</th>
               <th className="px-6 py-3">Categoría</th>
-              <th className="px-6 py-3">Talla</th>
+              <th className="px-6 py-3">Subcategoría</th>
               <th className="px-6 py-3">Precio</th>
               <th className="px-6 py-3">Stock</th>
+              <th className="px-6 py-3">Estado</th> {/* 🆕 */}
               <th className="px-6 py-3 text-center">Acciones</th>
             </tr>
           </thead>
@@ -256,14 +538,36 @@ export const Productos = () => {
                   <td className="px-6 py-3 font-medium">{producto.nombre}</td>
                   <td className="px-6 py-3">
                     <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                      {producto.categoria}
+                      {producto.subcategoria?.categoria?.nombre ||
+                        "Sin categoría"}
                     </span>
                   </td>
-                  <td className="px-6 py-3">{producto.talla}</td>
-                  <td className="px-6 py-3 font-semibold">
-                    Bs. {producto.precio.toFixed(2)}
+                  <td className="px-6 py-3">
+                    <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                      {producto.subcategoria?.nombre || "Sin subcategoría"}
+                    </span>
                   </td>
-                  <td className="px-6 py-3">{producto.stock} unidades</td>
+                  <td className="px-6 py-3 font-semibold">
+                    Bs. {Number(producto.precio).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-3">
+                    {producto.disponibilidad || 0} unidades
+                  </td>
+                  {/* 🆕 Columna de estado con toggle */}
+                  <td className="px-6 py-3">
+                    <button
+                      onClick={() =>
+                        handleToggleEstado(producto.id, !producto.activo)
+                      }
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                        producto.activo
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-red-100 text-red-700 hover:bg-red-200"
+                      }`}
+                    >
+                      {producto.activo ? "Activo" : "Inactivo"}
+                    </button>
+                  </td>
                   <td className="px-6 py-3 text-center">
                     <button
                       onClick={() => handleEdit(producto)}
@@ -285,7 +589,7 @@ export const Productos = () => {
             ) : (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-6 py-8 text-center text-slate-500"
                 >
                   No se encontraron productos
@@ -294,6 +598,12 @@ export const Productos = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Contador de resultados centrado */}
+      <div className="text-center text-sm text-slate-600 mb-3">
+        Mostrando {productosActuales.length} de {productosFiltrados.length}{" "}
+        productos
       </div>
 
       {/* Paginación */}
@@ -314,7 +624,7 @@ export const Productos = () => {
                 onClick={() => setCurrentPage(page)}
                 className={`px-4 py-2 rounded-lg transition ${
                   currentPage === page
-                    ? "bg-cyan-600 text-white"
+                    ? "bg-[#d88c6f] text-white"
                     : "border border-slate-300 hover:bg-slate-100 bg-white"
                 }`}
               >
@@ -340,7 +650,7 @@ export const Productos = () => {
           style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
         >
           <div
-            className="rounded-lg p-6 w-full max-w-md border-2 border-slate-300 shadow-2xl"
+            className="rounded-lg p-6 w-full max-w-md border-2 border-slate-300 shadow-2xl max-h-[90vh] overflow-y-auto"
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.9)",
               backdropFilter: "blur(8px)",
@@ -357,7 +667,7 @@ export const Productos = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="Ej: Camisa Formal"
+                  placeholder="Ej: Hamburguesa Clásica"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
@@ -366,35 +676,43 @@ export const Productos = () => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Categoría
+                  Descripción
                 </label>
-                <select
-                  value={form.categoria}
+                <textarea
+                  placeholder="Descripción del producto..."
+                  value={form.descripcion}
                   onChange={(e) =>
-                    setForm({ ...form, categoria: e.target.value })
+                    setForm({ ...form, descripcion: e.target.value })
                   }
+                  rows={3}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
-                >
-                  <option value="">Seleccionar categoría</option>
-                  <option value="Camisas">Camisas</option>
-                  <option value="Pantalones">Pantalones</option>
-                  <option value="Vestidos">Vestidos</option>
-                  <option value="Abrigos">Abrigos</option>
-                  <option value="Faldas">Faldas</option>
-                </select>
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Talla
+                  Subcategoría
                 </label>
-                <input
-                  type="text"
-                  placeholder="S, M, L, XL..."
-                  value={form.talla}
-                  onChange={(e) => setForm({ ...form, talla: e.target.value })}
+                <select
+                  value={form.subcategoria}
+                  onChange={(e) =>
+                    setForm({ ...form, subcategoria: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
-                />
+                >
+                  <option value="">Seleccionar subcategoría</option>
+                  {categorias.map((cat) => (
+                    <optgroup key={cat.id} label={cat.nombre}>
+                      {subcategorias
+                        .filter((sub) => sub.categoria.id === cat.id)
+                        .map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            {sub.nombre}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -418,10 +736,50 @@ export const Productos = () => {
                 <input
                   type="number"
                   placeholder="0"
-                  value={form.stock}
-                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  value={form.disponibilidad}
+                  onChange={(e) =>
+                    setForm({ ...form, disponibilidad: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Imagen del producto
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImagenChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
+                />
+                {imagenPreview && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-slate-700 mb-2">
+                      Vista previa:
+                    </p>
+                    <div className="relative">
+                      <img
+                        src={imagenPreview}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg border-2 border-slate-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagenPreview("");
+                          setImagenFile(null);
+                          setForm({ ...form, imagen: "" });
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition shadow-lg"
+                        title="Eliminar imagen"
+                      >
+                        <HiOutlineTrash size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -434,7 +792,7 @@ export const Productos = () => {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition font-medium"
+                className="flex-1 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-[#9e4e2f] transition font-medium"
               >
                 Guardar
               </button>
