@@ -15,7 +15,7 @@ Aplicación web desarrollada con **React**, **TypeScript** y **Vite**
 ## ¿Cómo ejecutar el código?
 
 - **git clone https://github.com/DaybitSemVoid247/ropas_frontend.git** - para clonar el repositorio
-- **cd ropasFrontend** - accede a la carpeta donde esta el proyecto
+- **cd ropas_frontend** - accede a la carpeta donde esta el proyecto
 - **npm install** - instalar las dependencias
 - **npm run dev** - iniciar la ejecución del proyecto
 
